@@ -159,7 +159,7 @@ public class UserService {
         try {
             User user = userRepository.findById(id).orElseThrow(() -> new NotFound404("Пользователь не найден"));
 
-            user.setPassword(newEmail);
+            user.setEmail(newEmail);
 
             userRepository.save(user);
 
