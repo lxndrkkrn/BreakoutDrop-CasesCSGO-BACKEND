@@ -1,11 +1,13 @@
-package org.example.breakoutdrop.Services;
+package org.example.breakoutdrop.Services.DomainServices;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.breakoutdrop.DTOs.CreateUserDTO;
+import org.example.breakoutdrop.DTOs.Create.CreateUserDTO;
 import org.example.breakoutdrop.Entities.User;
+import org.example.breakoutdrop.Errors.Client.NegativeBalance;
 import org.example.breakoutdrop.Errors.ClientHTTP.NotFound404;
 import org.example.breakoutdrop.Repositories.UserRepository;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Isolation;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
@@ -77,7 +79,7 @@ public class UserService {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void addBalanceToUser(Long id, BigDecimal deltaBalance) {
         log.info("Попытка пополнения баланся пользователю");
         try {
@@ -95,12 +97,16 @@ public class UserService {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void takeBalanceToUser(Long id, BigDecimal deltaBalance) {
         log.info("Попытка уменьшения баланся пользователю");
         try {
             User user = userRepository.findById(id).orElseThrow(() -> new NotFound404("Пользователь не найден"));
             BigDecimal userBalance = user.getBalance();
+
+            if (userBalance.compareTo(deltaBalance) < 0) {
+                throw new NegativeBalance("Недостаточно средств на балансе / Баланс не может быть отрицательным");
+            }
 
             user.setBalance(userBalance.subtract(deltaBalance));
 
@@ -113,7 +119,7 @@ public class UserService {
         }
     }
 
-    @Transactional
+    @Transactional(isolation = Isolation.REPEATABLE_READ)
     public void changeTradeURL(Long id, String newTradeURL) {
         log.info("Попытка изменения трейд-ссылки пользователю");
         try {
@@ -162,6 +168,10 @@ public class UserService {
             log.error("Ошибка при изменении email");
             throw e;
         }
+    }
+
+    public User findUserById(Long id) {
+        return userRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
     }
 
 }

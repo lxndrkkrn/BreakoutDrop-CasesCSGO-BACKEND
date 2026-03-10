@@ -1,4 +1,4 @@
-package org.example.breakoutdrop.Errors.Server;
+package org.example.breakoutdrop.Errors.ServerHTTP;
 
 public class NotImplemented501 extends RuntimeException {
     public NotImplemented501(String message) {

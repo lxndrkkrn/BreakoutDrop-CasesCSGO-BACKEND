@@ -1,4 +1,4 @@
-package org.example.breakoutdrop.Errors.Server;
+package org.example.breakoutdrop.Errors.ServerHTTP;
 
 public class ServiceUnavailable503 extends RuntimeException {
     public ServiceUnavailable503(String message) {

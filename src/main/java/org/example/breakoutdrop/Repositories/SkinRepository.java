@@ -1,4 +1,7 @@
 package org.example.breakoutdrop.Repositories;
 
-public interface SkinRepository {
+import org.example.breakoutdrop.Entities.Skin;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface SkinRepository extends JpaRepository<Skin, Long> {
 }

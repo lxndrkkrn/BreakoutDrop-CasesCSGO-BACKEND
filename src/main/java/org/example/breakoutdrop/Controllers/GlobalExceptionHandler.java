@@ -1,10 +1,13 @@
-package org.example.breakout.Controllers;
+package org.example.breakoutdrop.Controllers;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.breakout.Errors.Client.*;
-import org.example.breakout.Errors.Server.NotImplemented501;
-import org.example.breakout.Errors.Server.ServiceUnavailable503;
-import org.example.breakout.Responses.AllErrorResponse;
+
+import org.example.breakoutdrop.Errors.Client.*;
+import org.example.breakoutdrop.Errors.ClientHTTP.*;
+import org.example.breakoutdrop.Errors.Server.CaseIsEmpty;
+import org.example.breakoutdrop.Errors.ServerHTTP.NotImplemented501;
+import org.example.breakoutdrop.Errors.ServerHTTP.ServiceUnavailable503;
+import org.example.breakoutdrop.Responses.AllErrorResponse;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.MethodArgumentNotValidException;
@@ -103,19 +106,19 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.CONFLICT);
     }
 
-    @ExceptionHandler(TooManyRequests429.class)
-    public ResponseEntity<AllErrorResponse> handleTooManyRequests429(TooManyRequests429 ex) {
-
-        AllErrorResponse errorResponse = new AllErrorResponse(
-                LocalDateTime.now(),
-                HttpStatus.TOO_MANY_REQUESTS.value(),
-                "Too Many Requests",
-                ex.getMessage()
-        );
-
-        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
-        return new ResponseEntity<>(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
-    }
+//    @ExceptionHandler(TooManyRequests429.class)
+//    public ResponseEntity<AllErrorResponse> handleTooManyRequests429(TooManyRequests429 ex) {
+//
+//        AllErrorResponse errorResponse = new AllErrorResponse(
+//                LocalDateTime.now(),
+//                HttpStatus.TOO_MANY_REQUESTS.value(),
+//                "Too Many Requests",
+//                ex.getMessage()
+//        );
+//
+//        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+//        return new ResponseEntity<>(errorResponse, HttpStatus.TOO_MANY_REQUESTS);
+//    }
 
 
     @ExceptionHandler(Exception.class)
@@ -158,6 +161,91 @@ public class GlobalExceptionHandler {
 
         log.warn("Ошибка сервера: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
         return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+
+    @ExceptionHandler(NegativeBalance.class)
+    public ResponseEntity<AllErrorResponse> handleNegativeBalance(NegativeBalance ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Negative Balance",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IncorrectEmail.class)
+    public ResponseEntity<AllErrorResponse> handleIncorrectEmail(IncorrectEmail ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Incorrect Email",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IncorrectPassword.class)
+    public ResponseEntity<AllErrorResponse> handleIncorrectPassword(IncorrectPassword ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Incorrect Password",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(IncorrectURL.class)
+    public ResponseEntity<AllErrorResponse> handleIncorrectURL(IncorrectURL ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Incorrect URL",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
+    @ExceptionHandler(CaseIsEmpty.class)
+    public ResponseEntity<AllErrorResponse> handleCaseIsEmpty(CaseIsEmpty ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.SERVICE_UNAVAILABLE.value(),
+                "Case Is Empty",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка сервера: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.SERVICE_UNAVAILABLE);
+    }
+
+    @ExceptionHandler(SameSkin.class)
+    public ResponseEntity<AllErrorResponse> handleSameSkin(SameSkin ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Same Skin",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
 }

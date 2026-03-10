@@ -1,4 +1,4 @@
-package org.example.breakoutdrop.DTOs;
+package org.example.breakoutdrop.DTOs.Create;
 
 import jakarta.validation.constraints.Email;
 import jakarta.validation.constraints.NotNull;

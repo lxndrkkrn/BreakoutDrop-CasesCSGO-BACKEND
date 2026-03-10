@@ -1,9 +1,7 @@
-package org.example.breakoutdrop.DTOs;
+package org.example.breakoutdrop.DTOs.Create;
 
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
-import org.example.breakoutdrop.Entities.Case;
-import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Enums.SkinsRarity;
 import org.example.breakoutdrop.Enums.WeaponType;
 

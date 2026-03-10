@@ -1,4 +1,4 @@
-package org.example.breakout.Responses;
+package org.example.breakoutdrop.Responses;
 
 import java.time.LocalDateTime;
 

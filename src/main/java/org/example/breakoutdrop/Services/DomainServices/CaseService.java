@@ -1,7 +1,7 @@
-package org.example.breakoutdrop.Services;
+package org.example.breakoutdrop.Services.DomainServices;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.breakoutdrop.DTOs.CreateCaseDTO;
+import org.example.breakoutdrop.DTOs.Create.CreateCaseDTO;
 import org.example.breakoutdrop.Entities.Case;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Errors.ClientHTTP.NotFound404;
@@ -96,6 +96,10 @@ public class CaseService {
             log.error("Ошибка при установки названия кейса");
             throw e;
         }
+    }
+
+    public Case findCaseById(Long id) {
+        return caseRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
     }
 
 }

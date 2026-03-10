@@ -1,7 +1,7 @@
-package org.example.breakoutdrop.Services;
+package org.example.breakoutdrop.Services.DomainServices;
 
 import lombok.extern.slf4j.Slf4j;
-import org.example.breakoutdrop.DTOs.CreateSkinDTO;
+import org.example.breakoutdrop.DTOs.Create.CreateSkinDTO;
 import org.example.breakoutdrop.Entities.Case;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Errors.ClientHTTP.NotFound404;
@@ -40,6 +40,7 @@ public class SkinService {
             skin.setName(createSkinDTO.name());
             skin.setRarity(createSkinDTO.rarity());
             skin.setPrice(createSkinDTO.price());
+            skin.setChance(createSkinDTO.chance());
             skin.setCases(parentCase);
 
             skinRepository.save(skin);
@@ -79,6 +80,23 @@ public class SkinService {
             log.info("Цена скина успешно изменена");
         } catch (Exception e) {
             log.error("Ошибка при изменении цены скина");
+            throw e;
+        }
+    }
+
+    @Transactional
+    public void setChance(Long id, Double newChance) {
+        log.info("Попытка изменения шансов на скин");
+        try {
+            Skin skin = skinRepository.findById(id).orElseThrow(() -> new NotFound404("Скин не найден"));
+
+            skin.setChance(newChance);
+
+            skinRepository.save(skin);
+
+            log.info("Шансы на скин успешно изменены");
+        } catch (Exception e) {
+            log.error("Ошибка при изменении шансов на скин");
             throw e;
         }
     }
@@ -125,6 +143,19 @@ public class SkinService {
             log.error("Ошибка при удалении скина из кейса");
             throw e;
         }
+    }
+
+    public Skin findSkinById(Long id) {
+        return skinRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
+    }
+
+    public Double getChanceSkinById(Long id) {
+        Skin skin = skinRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
+        return skin.getChance();
+    }
+
+    public Double getChanceSkinBySkin(Skin skin) {
+        return skin.getChance();
     }
 
 }

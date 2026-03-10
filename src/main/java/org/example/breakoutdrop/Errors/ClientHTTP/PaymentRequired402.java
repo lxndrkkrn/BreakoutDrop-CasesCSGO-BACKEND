@@ -1,4 +1,4 @@
-package org.example.breakoutdrop.Errors.Client;
+package org.example.breakoutdrop.Errors.ClientHTTP;
 
 public class PaymentRequired402 extends RuntimeException {
     public PaymentRequired402(String message) {

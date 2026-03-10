@@ -1,4 +1,7 @@
 package org.example.breakoutdrop.Repositories;
 
-public interface UserRepository {
+import org.example.breakoutdrop.Entities.User;
+import org.springframework.data.jpa.repository.JpaRepository;
+
+public interface UserRepository extends JpaRepository<User, Long> {
 }
