@@ -1,15 +1,12 @@
 package org.example.breakoutdrop.Services.ApplicationServices;
 
-import jakarta.persistence.criteria.CriteriaBuilder;
 import lombok.extern.slf4j.Slf4j;
-import org.example.breakoutdrop.DTOs.Create.CreateCaseDTO;
 import org.example.breakoutdrop.DTOs.Create.CreateInventoryDTO;
 import org.example.breakoutdrop.DTOs.OpeningCaseDTO;
 import org.example.breakoutdrop.Entities.Case;
-import org.example.breakoutdrop.Entities.Inventory;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Entities.User;
-import org.example.breakoutdrop.Errors.ClientHTTP.NotFound404;
+import org.example.breakoutdrop.Errors.Client.NegativeBalance;
 import org.example.breakoutdrop.Errors.Server.CaseIsEmpty;
 import org.example.breakoutdrop.Services.DomainServices.*;
 import org.springframework.stereotype.Service;
@@ -29,14 +26,14 @@ public class OpenCaseService {
     private final SkinService skinService;
     private final InventoryService inventoryService;
 
-    private final TransactionService transactionService;
+    //private final TransactionService transactionService;
 
     public OpenCaseService(CaseService caseService, UserService userService, SkinService skinService, InventoryService inventoryService, TransactionService transactionService) {
         this.caseService = caseService;
         this.userService = userService;
         this.skinService = skinService;
         this.inventoryService = inventoryService;
-        this.transactionService = transactionService;
+        //this.transactionService = transactionService;
     }
 
     @Transactional
@@ -47,6 +44,10 @@ public class OpenCaseService {
             Case openingCase = caseService.findCaseById(openingCaseDTO.caseId());
 
             BigDecimal oldBalance = user.getBalance();
+
+            if (oldBalance.compareTo(openingCase.getPrice()) < 0) {
+                throw new NegativeBalance("Недостаточно средств");
+            }
 
             takeBalance(openingCaseDTO.userId(), openingCase.getPrice());
             Skin wonSkin = skinCalculation(openingCase);
@@ -85,7 +86,7 @@ public class OpenCaseService {
 
             double currentSum = 0;
             for (Skin skin : skinList) {
-                currentSum += skinService.getChanceSkinBySkin(skin).doubleValue();
+                currentSum += skinService.getChanceSkinBySkin(skin);
                 if (randomValue <= currentSum) {
                     return skin; // "Успешный" скин - передаётся наверх
                 }

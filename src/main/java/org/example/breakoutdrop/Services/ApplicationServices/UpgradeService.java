@@ -6,15 +6,12 @@ import org.example.breakoutdrop.DTOs.OpeningUpgradeDTO;
 import org.example.breakoutdrop.Entities.Inventory;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Entities.User;
-import org.example.breakoutdrop.Errors.Client.SameSkin;
-import org.example.breakoutdrop.Errors.ClientHTTP.NotFound404;
 import org.example.breakoutdrop.Services.DomainServices.*;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
 import java.math.RoundingMode;
-import java.util.Random;
 import java.util.concurrent.ThreadLocalRandom;
 
 @Service
@@ -50,14 +47,20 @@ public class UpgradeService {
 
             Inventory inventoryItem = inventoryService.findInventoryByUserAndSkin(user, suppliedSkin);
 
+            if (suppliedSkin.getId().equals(wonSkin.getId()) || suppliedSkin.equals(wonSkin)) {
+                throw new IllegalArgumentException("Вы не можете апгрейднуть скин до самого себя");
+            }
+
+            if (!inventoryItem.getUser().getId().equals(user.getId())) {
+                throw new IllegalArgumentException("У вас нет такого скина");
+            }
+
             BigDecimal priceSuppliedSkin = suppliedSkin.getPrice();
             BigDecimal priceWonSkin = wonSkin.getPrice();
 
             BigDecimal winningPercentage = priceSuppliedSkin.divide(priceWonSkin, 4, RoundingMode.HALF_UP);
 
-            if (suppliedSkin.getId().equals(wonSkin.getId()) || suppliedSkin.equals(wonSkin)) {
-                throw new IllegalArgumentException("Вы не можете апгрейднуть скин до самого себя");
-            }
+
 
             if (winningPercentage.compareTo(MAX_UPGRADE_CHANCE) > 0) {
                 throw new IllegalArgumentException("Апгрейд невозможен: шанс выигрыша не должен превышать 75%");

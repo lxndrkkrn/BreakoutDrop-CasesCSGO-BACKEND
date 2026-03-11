@@ -13,6 +13,7 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.time.LocalDateTime;
+import java.util.List;
 
 @Service
 @Slf4j
@@ -81,7 +82,15 @@ public class InventoryService {
         return inventoryRepository.findById(id).orElseThrow(() -> new NotFound404("Инвентарь не найден"));
     }
 
+    public List<Inventory> findInventoryListBySkin(User user, List<Skin> skinList) {
+        return inventoryRepository.findAllByUserAndSkinIn(user, skinList);
+    }
+
     public Inventory findInventoryByUserAndSkin(User user, Skin skin) {
         return inventoryRepository.findFirstByUserAndSkin(user, skin).orElseThrow(() -> new NotFound404("Инвентаря, связующего user: " + user + " и skin: " + skin + " не найден"));
+    }
+
+    public void deleteAll(List<Inventory> inventoryList) {
+        inventoryRepository.deleteAll(inventoryList);
     }
 }

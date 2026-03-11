@@ -248,4 +248,18 @@ public class GlobalExceptionHandler {
         return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
     }
 
+    @ExceptionHandler(InvalidValue.class)
+    public ResponseEntity<AllErrorResponse> handleInvalidValue(InvalidValue ex) {
+
+        AllErrorResponse errorResponse = new AllErrorResponse(
+                LocalDateTime.now(),
+                HttpStatus.BAD_REQUEST.value(),
+                "Invalid Value",
+                ex.getMessage()
+        );
+
+        log.warn("Ошибка пользователя: {}; Сообщение: {}", errorResponse.error(), ex.getMessage());
+        return new ResponseEntity<>(errorResponse, HttpStatus.BAD_REQUEST);
+    }
+
 }

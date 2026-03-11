@@ -146,11 +146,24 @@ public class SkinService {
     }
 
     public Skin findSkinById(Long id) {
-        return skinRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
+        return skinRepository.findById(id).orElseThrow(() -> new NotFound404("Скин не найден"));
+    }
+
+    public Skin findSkinByClosestPrice(BigDecimal price) {
+        return skinRepository.findClosestByPrice(price).orElseThrow(() -> new NotFound404("В базе вообще нет скинов"));
+    }
+
+
+    public List<Skin> findListSkinById(List<Long> id) {
+        return skinRepository.findAllById(id);
+    }
+
+    public BigDecimal getPriceSkinById(Long id) {
+        return skinRepository.findById(id).orElseThrow(() -> new NotFound404("Скин не найден")).getPrice();
     }
 
     public Double getChanceSkinById(Long id) {
-        Skin skin = skinRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
+        Skin skin = skinRepository.findById(id).orElseThrow(() -> new NotFound404("Скин не найден"));
         return skin.getChance();
     }
 
