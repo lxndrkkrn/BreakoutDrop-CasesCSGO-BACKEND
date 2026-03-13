@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 import org.example.breakoutdrop.Enums.SkinsRarity;
 import org.example.breakoutdrop.Enums.WeaponType;
+import org.hibernate.validator.constraints.URL;
 
 import java.math.BigDecimal;
 import java.util.ArrayList;
@@ -40,6 +41,10 @@ public class Skin {
 
     @NotNull
     private Double chance = 0d;
+
+    @NotNull
+    @URL(message = "Некоректный url")
+    private String skinPicture;
 
     @ManyToMany
     @JoinTable(name = "skin_cases", joinColumns = @JoinColumn(name = "skin_id"), inverseJoinColumns = @JoinColumn(name = "case_id"))

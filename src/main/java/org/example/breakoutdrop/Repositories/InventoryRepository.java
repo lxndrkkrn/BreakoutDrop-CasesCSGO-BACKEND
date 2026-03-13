@@ -14,5 +14,6 @@ public interface InventoryRepository extends JpaRepository<Inventory, Long> {
 
     List<Inventory> findAllByUserAndSkinIn(User user, List<Skin> skins);
 
+    List<Inventory> findAllByUser(User user);
 
 }

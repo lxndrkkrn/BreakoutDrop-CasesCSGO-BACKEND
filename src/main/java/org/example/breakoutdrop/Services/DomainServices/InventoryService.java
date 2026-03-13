@@ -90,6 +90,10 @@ public class InventoryService {
         return inventoryRepository.findFirstByUserAndSkin(user, skin).orElseThrow(() -> new NotFound404("Инвентаря, связующего user: " + user + " и skin: " + skin + " не найден"));
     }
 
+    public List<Inventory> findAllByUser(User user) {
+        return inventoryRepository.findAllByUser(user);
+    }
+
     public void deleteAll(List<Inventory> inventoryList) {
         inventoryRepository.deleteAll(inventoryList);
     }

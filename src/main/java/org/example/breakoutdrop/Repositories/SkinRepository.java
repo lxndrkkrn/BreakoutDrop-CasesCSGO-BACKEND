@@ -13,5 +13,6 @@ public interface SkinRepository extends JpaRepository<Skin, Long> {
     @Query(value = "SELECT * FROM skins s ORDER BY ABS(s.price - :targetPrice) ASC LIMIT 1", nativeQuery = true)
     Optional<Skin> findClosestByPrice(@Param("targetPrice") BigDecimal targetPrice);
 
+    //Optional<Skin> findSkinByInventory()
 
 }

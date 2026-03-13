@@ -60,8 +60,6 @@ public class UpgradeService {
 
             BigDecimal winningPercentage = priceSuppliedSkin.divide(priceWonSkin, 4, RoundingMode.HALF_UP);
 
-
-
             if (winningPercentage.compareTo(MAX_UPGRADE_CHANCE) > 0) {
                 throw new IllegalArgumentException("Апгрейд невозможен: шанс выигрыша не должен превышать 75%");
             } else if (winningPercentage.compareTo(MIN_UPGRADE_CHANCE) < 0) {

@@ -41,6 +41,7 @@ public class SkinService {
             skin.setRarity(createSkinDTO.rarity());
             skin.setPrice(createSkinDTO.price());
             skin.setChance(createSkinDTO.chance());
+            skin.setSkinPicture(createSkinDTO.skinPicture());
             skin.setCases(parentCase);
 
             skinRepository.save(skin);
