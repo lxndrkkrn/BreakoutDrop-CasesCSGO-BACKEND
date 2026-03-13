@@ -1,4 +1,4 @@
-# Core Banking API
+# Breakout-Drop : Cases CSGO
 Проект BreakoutDrop v1.3
 
 ### Стек:
