@@ -8,6 +8,7 @@ import org.example.breakoutdrop.Entities.Inventory;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Entities.SystemWallet;
 import org.example.breakoutdrop.Entities.User;
+import org.example.breakoutdrop.Enums.TransactionType;
 import org.example.breakoutdrop.Errors.ServerHTTP.ServiceUnavailable503;
 import org.example.breakoutdrop.Repositories.SystemWalletRepository;
 import org.example.breakoutdrop.Services.DomainServices.*;
@@ -36,13 +37,13 @@ public class UpgradeService {
     private static final BigDecimal MAX_UPGRADE_CHANCE = new BigDecimal("0.75");
     private static final BigDecimal MIN_UPGRADE_CHANCE = new BigDecimal("0.01");
 
-    private final SystemWallet wallet = systemWalletRepository.findById(1L).orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
-    private final BigDecimal prizePool = wallet.getPrizePool();
-
     @Transactional
     public void upgradeSkin(OpeningUpgradeDTO openingUpgradeDTO) {
         log.info("Попытка апгрейднуть скин");
         try {
+            SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
+            BigDecimal prizePool = wallet.getPrizePool();
+
             User user = userService.findUserById(openingUpgradeDTO.userId());
             Skin suppliedSkin = skinService.findSkinById(openingUpgradeDTO.suppliedSkin());
             Skin wonSkin = skinService.findSkinById(openingUpgradeDTO.wonSkin());
@@ -70,12 +71,12 @@ public class UpgradeService {
 
             inventoryService.deleteInventoryById(inventoryItem.getId());
 
-            if (winningUpgrade(winningPercentage, wonSkin)) {
+            if (winningUpgrade(winningPercentage, wonSkin, wallet)) {
 
                 CreateInventoryDTO createInventoryDTO = new CreateInventoryDTO(user.getId(), wonSkin.getId());
                 inventoryService.createInventory(createInventoryDTO);
 
-                wallet.setPrizePool(wallet.getPrizePool().subtract(wonSkin.getPrice()));
+                transactionService.createWinTransaction(user, wonSkin.getPrice(), TransactionType.UPGRADING);
 
                 log.info("Апгрейд успешный, скин добавлен в инвентарь");
 
@@ -90,16 +91,16 @@ public class UpgradeService {
         }
     }
 
-    private boolean winningUpgrade(BigDecimal winningPercentage, Skin wonSkin) {
+    private boolean winningUpgrade(BigDecimal winningPercentage, Skin wonSkin, SystemWallet wallet) {
 
         if (wonSkin.getPrice().compareTo(wallet.getPrizePool()) >= 0) {
             return false;
         }
 
-        double chanceThreshold = winningPercentage.doubleValue();
-        double randomShot = ThreadLocalRandom.current().nextDouble();
+        BigDecimal chanceThreshold = new BigDecimal(winningPercentage.toString());
+        BigDecimal randomShot = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
 
-        if (randomShot <= chanceThreshold) {
+        if (randomShot.compareTo(chanceThreshold) <= 0) {
             return true;
         } else {
             return false;

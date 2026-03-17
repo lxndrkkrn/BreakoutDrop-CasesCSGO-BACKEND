@@ -8,6 +8,7 @@ import org.example.breakoutdrop.Entities.Inventory;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Entities.SystemWallet;
 import org.example.breakoutdrop.Entities.User;
+import org.example.breakoutdrop.Enums.TransactionType;
 import org.example.breakoutdrop.Errors.Client.InvalidValue;
 import org.example.breakoutdrop.Errors.ServerHTTP.ServiceUnavailable503;
 import org.example.breakoutdrop.Repositories.SystemWalletRepository;
@@ -43,13 +44,12 @@ public class UseOfTheContractService {
 
     private final SecureRandom secureRandom = new SecureRandom();
 
-    private final SystemWallet wallet = systemWalletRepository.findById(1L).orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
-    private final BigDecimal prizePool = wallet.getPrizePool();
-
     @Transactional
     public void useOfTheContractService(OpeningContractDTO openingContractDTO) {
         log.info("Попытка сделать контракт");
         try {
+            SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
+            BigDecimal prizePool = wallet.getPrizePool();
 
             User user = userService.findUserById(openingContractDTO.userId());
             List<Skin> skins = skinService.findListSkinById(openingContractDTO.skinId());
@@ -74,12 +74,11 @@ public class UseOfTheContractService {
             BigDecimal maxPrice = priceSum.multiply(coefficient);
             BigDecimal minPrice = priceSum.divide(coefficient, 0, RoundingMode.HALF_UP);
 
-            Skin wonSkin = getRandomSkin(maxPrice, minPrice);
+            Skin wonSkin = getRandomSkin(wallet, minPrice, maxPrice);
 
             CreateInventoryDTO createInventoryDTO = new CreateInventoryDTO(user.getId(), wonSkin.getId());
 
-            wallet.setPrizePool(wallet.getPrizePool().subtract(wonSkin.getPrice()));
-
+            transactionService.createWinTransaction(user, wonSkin.getPrice(), TransactionType.CONTRACT);
             inventoryService.deleteAll(usedInventories);
             inventoryService.createInventory(createInventoryDTO);
 
@@ -98,14 +97,16 @@ public class UseOfTheContractService {
 
     }
 
-    private Skin getRandomSkin(BigDecimal maxPriceNP, BigDecimal minPrice) {
+    private Skin getRandomSkin(SystemWallet wallet, BigDecimal minPrice, BigDecimal maxPrice) {
 
-        double randomMultiplier = secureRandom.nextDouble();
+        BigDecimal randomMultiplier = new BigDecimal(secureRandom.toString());
 
-        BigDecimal maxPrice = wallet.getPrizePool();
+        if (maxPrice.compareTo(wallet.getPrizePool()) >= 0) {
+            maxPrice = wallet.getPrizePool();
+        }
 
         BigDecimal priceDiff = maxPrice.subtract(minPrice);
-        BigDecimal randomPrice = minPrice.add(priceDiff.multiply(BigDecimal.valueOf(randomMultiplier)));
+        BigDecimal randomPrice = minPrice.add(priceDiff.multiply(randomMultiplier));
 
         return skinService.findSkinByClosestPrice(randomPrice);
     }

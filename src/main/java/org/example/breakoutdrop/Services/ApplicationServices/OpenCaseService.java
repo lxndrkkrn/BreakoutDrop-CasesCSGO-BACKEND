@@ -8,6 +8,7 @@ import org.example.breakoutdrop.Entities.Case;
 import org.example.breakoutdrop.Entities.Skin;
 import org.example.breakoutdrop.Entities.SystemWallet;
 import org.example.breakoutdrop.Entities.User;
+import org.example.breakoutdrop.Enums.TransactionType;
 import org.example.breakoutdrop.Errors.Client.NegativeBalance;
 import org.example.breakoutdrop.Errors.Server.CaseIsEmpty;
 import org.example.breakoutdrop.Errors.ServerHTTP.ServiceUnavailable503;
@@ -17,6 +18,8 @@ import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
 import java.math.BigDecimal;
+import java.math.BigInteger;
+import java.security.SecureRandom;
 import java.util.List;
 import java.util.Random;
 
@@ -33,10 +36,9 @@ public class OpenCaseService {
 
     private final SystemWalletRepository systemWalletRepository;
 
-    //private final TransactionService transactionService;
+    private final TransactionService transactionService;
 
-    private final SystemWallet wallet = systemWalletRepository.findById(1L).orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
-    private final BigDecimal prizePool = wallet.getPrizePool();
+    private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
     public void userOpeningCase(OpeningCaseDTO openingCaseDTO) {
@@ -59,6 +61,7 @@ public class OpenCaseService {
                     wonSkin.getId()
             );
 
+            transactionService.createWinTransaction(user, wonSkin.getPrice(), TransactionType.CASE_OPENING);
             inventoryService.createInventory(createInventoryDTO);
 
             //transactionService.createTransactionLog(openingCaseDTO.userId(), openingCaseDTO.caseId(), wonSkin.getId(), oldBalance, );
@@ -72,6 +75,9 @@ public class OpenCaseService {
     private Skin skinCalculation(Case openingCase) {
         log.info("Попытка выбора скина из кейса");
         try {
+            SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
+            BigDecimal prizePool = wallet.getPrizePool();
+
             List<Skin> fullSkinList = openingCase.getSkinList();
             List<Skin> skinList = fullSkinList.stream().filter(skin -> skin.getPrice().compareTo(prizePool) <= 0).toList();
 
@@ -79,16 +85,15 @@ public class OpenCaseService {
                 throw new CaseIsEmpty("Кейс '" + openingCase.getName() + "' пуст! Добавьте скины.");
             }
 
-            double totalChance = skinList.stream().mapToDouble(skinService::getChanceSkinBySkin).sum();
-            double randomValue = new Random().nextDouble() * totalChance;
+            BigDecimal totalChance = new BigDecimal(skinList.stream().mapToDouble(skinService::getChanceSkinBySkin).sum());
+            BigDecimal randomValue = totalChance.multiply(BigDecimal.valueOf(secureRandom.nextDouble()));
 
-            double currentSum = 0;
+            BigDecimal currentSum = new BigDecimal(BigInteger.ZERO);
 
             for (Skin skin : skinList) {
+                currentSum = currentSum.add(new BigDecimal(skinService.getChanceSkinBySkin(skin)));
 
-                currentSum += skinService.getChanceSkinBySkin(skin);
-
-                if (randomValue <= currentSum) {
+                if (randomValue.compareTo(currentSum) <= 0) {
 
                     wallet.setPrizePool(wallet.getPrizePool().subtract(skin.getPrice()));
                     return skin; // "Успешный" скин - передаётся наверх

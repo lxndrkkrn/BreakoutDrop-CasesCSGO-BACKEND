@@ -53,4 +53,14 @@ public class TransactionService {
         transactionRepository.save(transaction);
     }
 
+    @Transactional
+    public void createWinTransaction(User user, BigDecimal amount, TransactionType transactionType) {
+
+        SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступных сейфов"));
+
+        createTransaction(user, amount, transactionType);
+        wallet.setPrizePool(wallet.getPrizePool().subtract(amount));
+
+    }
+
 }
