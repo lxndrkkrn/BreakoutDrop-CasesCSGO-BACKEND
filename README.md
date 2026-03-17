@@ -1,3 +1,5 @@
+# ATTENTION DISCLAIMER: This project is intended for educational purposes only. It does not involve real money or items. The developer does not encourage gambling. This project is not created for commercial purposes; it demonstrates the deception of many online casinos and similar resources, and how their fraudulent and deceptive scripts work. DO NOT PLAY AT THE CASINO!
+
 # Breakout-Drop : Cases CS2
 Проект BreakoutDrop v1.4
 
@@ -27,3 +29,5 @@
 
 ### В разработке:
 - Вывод скинов в инвентарь Steam через ботов (в далёком светлом будущем...)
+
+# DO NOT PLAY AT THE CASINO!
