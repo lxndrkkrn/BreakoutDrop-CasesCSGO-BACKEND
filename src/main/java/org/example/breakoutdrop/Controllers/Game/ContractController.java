@@ -19,7 +19,7 @@ public class ContractController {
     private final UseOfTheContractService useOfTheContractService;
 
     @PostMapping()
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and #userId == principal.id")
     public ResponseEntity<?> useOfTheContract(@Valid @RequestBody OpeningContractDTO openingContractDTO) {
         Skin wonSkin = useOfTheContractService.useOfTheContract(openingContractDTO);
 

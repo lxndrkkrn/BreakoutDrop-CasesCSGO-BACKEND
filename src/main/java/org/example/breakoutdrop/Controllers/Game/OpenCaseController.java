@@ -21,7 +21,7 @@ public class OpenCaseController {
     private final OpenCaseService openCaseService;
 
     @PostMapping("/{caseId}")
-    @PreAuthorize("isAuthenticated()")
+    @PreAuthorize("isAuthenticated() and #userId == principal.id")
     public ResponseEntity<?> openCase(@Valid @PathVariable Long caseId, @RequestBody Long userId) {
         OpeningCaseDTO openingCaseDTO = new OpeningCaseDTO(userId, caseId);
         Skin wonSkin = openCaseService.userOpeningCase(openingCaseDTO);

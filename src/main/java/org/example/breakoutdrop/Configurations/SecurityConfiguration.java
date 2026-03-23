@@ -23,20 +23,22 @@ public class SecurityConfiguration {
 
                 .authorizeHttpRequests(auth -> auth
                         // 1. Публичные страницы (регистрация, статика, главная)
-                        .requestMatchers("/", "/register", "/case/**", "/upgrade/**", "/contract/**").permitAll()
+                        .requestMatchers("/", "/case/**", "/upgrade/**", "/contract/**").permitAll()
+
+                        .requestMatchers("/register").anonymous()
 
                         // 2. Страницы только для админов
-                        .requestMatchers("/admin/**").hasRole("ADMIN")
+                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SERVICE")
 
                         // 3. Страницы для пользователей с ролью USER или ADMIN
-                        .requestMatchers("/profile/**").hasAnyRole("USER", "ADMIN")
+                        .requestMatchers("/profile/**").hasAnyRole("USER", "YT", "MODER", "ADMIN", "SERVICE")
 
                         // 4. Все остальное — только после логина
                         .anyRequest().authenticated()
                 )
                 .formLogin(login -> login
                         .loginPage("/login")             // Твой эндпоинт для страницы логина
-                        .defaultSuccessUrl("/") // Куда редиректить после успешного входа
+                        .defaultSuccessUrl("/")          // Куда редиректить после успешного входа
                         .permitAll()                     // Разрешить всем доступ к форме логина
                 )
                 .logout(logout -> logout
