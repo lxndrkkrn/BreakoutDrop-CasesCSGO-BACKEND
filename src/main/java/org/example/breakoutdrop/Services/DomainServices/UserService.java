@@ -172,7 +172,7 @@ public class UserService implements UserDetailsService {
         try {
             User user = userRepository.findById(id).orElseThrow(() -> new NotFound404("Пользователь не найден"));
 
-            user.setPassword(newPassword);
+            user.setPassword(passwordEncoder.encode(newPassword));
 
             userRepository.save(user);
 
