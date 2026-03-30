@@ -38,7 +38,7 @@ public class UpgradeService {
     private static final BigDecimal MIN_UPGRADE_CHANCE = new BigDecimal("0.01");
 
     @Transactional
-    public Skin upgradeSkin(OpeningUpgradeDTO openingUpgradeDTO) {
+    public Long upgradeSkin(OpeningUpgradeDTO openingUpgradeDTO) {
         log.info("Попытка апгрейднуть скин");
         try {
             SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
@@ -79,7 +79,7 @@ public class UpgradeService {
                 transactionService.createWinTransaction(user, wonSkin.getPrice(), TransactionType.UPGRADING);
 
                 log.info("Апгрейд успешный, скин добавлен в инвентарь ({})", wonSkin);
-                return wonSkin;
+                return wonSkin.getId();
 
             } else {
                 log.info("Апгрейд неудачен, скин потерян");
@@ -101,6 +101,9 @@ public class UpgradeService {
 
         BigDecimal chanceThreshold = new BigDecimal(winningPercentage.toString());
         BigDecimal randomShot = BigDecimal.valueOf(ThreadLocalRandom.current().nextDouble());
+
+        log.info("Шанс на выигрыш: " + chanceThreshold);
+        log.info("Рандом-шот: " + randomShot);
 
         if (randomShot.compareTo(chanceThreshold) <= 0) {
             return true;

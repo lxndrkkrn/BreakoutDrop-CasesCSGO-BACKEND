@@ -27,7 +27,11 @@ public class PromoCode {
     @NotNull
     @Column(nullable = false)
     @Positive(message = "Промо-код должен давать бонус")
-    BigDecimal factor;
+    private BigDecimal factor;
+
+    @NotNull
+    @Column(nullable = false)
+    private BigDecimal name;
 
     @NotNull
     @Column(nullable = false)

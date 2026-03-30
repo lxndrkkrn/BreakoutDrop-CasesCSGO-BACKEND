@@ -4,5 +4,5 @@ import java.util.List;
 
 public record OpeningContractDTO(
         Long userId,
-        List<Long> skinId
+        List<Long> inventoryIds
 ) { }

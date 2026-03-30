@@ -67,9 +67,9 @@ public class UserService implements UserDetailsService {
             user.setTradeURL(createUserDTO.tradeURL());
 
             Set<Role> userRoles = createUserDTO.roles().stream()
-                    .map(roleEnum -> roleRepository.findByName(roleEnum.name()) // .name() вернет "ROLE_USER"
-                            .orElseThrow(() -> new RuntimeException("Роль не найдена в БД: " + roleEnum.name())))
-                    .collect(Collectors.toSet());
+                            .map(roleId -> roleRepository.findById(roleId)
+                                    .orElseThrow(() -> new NotFound404("Роль по id в БД не найдена: " + roleId)))
+                                    .collect(Collectors.toSet());
 
             user.setRoles(userRoles);
 
@@ -119,7 +119,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional()
     public void addBalanceToUser(Long id, BigDecimal deltaBalance) {
         log.info("Попытка добавления баланся пользователю");
         try {
@@ -137,7 +137,7 @@ public class UserService implements UserDetailsService {
         }
     }
 
-    @Transactional(isolation = Isolation.REPEATABLE_READ)
+    @Transactional()
     public void takeBalanceToUser(Long id, BigDecimal deltaBalance) {
         log.info("Попытка уменьшения баланся пользователю");
         try {
@@ -206,6 +206,48 @@ public class UserService implements UserDetailsService {
             log.info("Email успешно изменен");
         } catch (Exception e) {
             log.error("Ошибка при изменении email");
+            throw e;
+        }
+    }
+
+    @Transactional
+    public User addRole(Long userId, Long roleId) {
+        log.info("Попытка добавления роли пользователю");
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Юзер не найден"));
+
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RuntimeException("Роль не найдена"));
+
+            user.getRoles().add(role);
+            userRepository.save(user);
+
+            log.info("Роль успешно добавлена");
+            return user;
+        } catch (Exception e) {
+            log.error("Ошибка при добавлении роли");
+            throw e;
+        }
+    }
+
+    @Transactional
+    public User deleteRole(Long userId, Long roleId) {
+        log.info("Попытка удаления роли пользователю");
+        try {
+            User user = userRepository.findById(userId)
+                    .orElseThrow(() -> new RuntimeException("Юзер не найден"));
+
+            Role role = roleRepository.findById(roleId)
+                    .orElseThrow(() -> new RuntimeException("Роль не найдена"));
+
+            user.getRoles().remove(role);
+            userRepository.save(user);
+
+            log.info("Роль успешно удалена");
+            return user;
+        } catch (Exception e) {
+            log.error("Ошибка при удалении роли");
             throw e;
         }
     }

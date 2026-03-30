@@ -6,7 +6,9 @@ import org.example.breakoutdrop.Entities.Role;
 import org.example.breakoutdrop.Enums.UserRole;
 import org.hibernate.validator.constraints.URL;
 
+import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 public record CreateUserDTO(
@@ -14,9 +16,9 @@ public record CreateUserDTO(
         @NotNull String password,
         @NotNull @Email String email,
         @NotNull @URL String tradeURL,
-        Set<UserRole> roles // <-- Меняем тип на Enum
+        Set<Long> roles
 ) {
     public CreateUserDTO() {
-        this("", "", "", "", new HashSet<>());
+        this("", "", "", "", new HashSet<>() {});
     }
 }

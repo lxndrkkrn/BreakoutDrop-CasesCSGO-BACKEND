@@ -21,10 +21,10 @@ public class BalanceController {
 
     private final OpenCaseService openCaseService;
     private final UserService userService;
-    private ReplenishmentOfBalanceService replenishmentOfBalanceService;
+    private final ReplenishmentOfBalanceService replenishmentOfBalanceService;
 
     @PatchMapping("/set-balance/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setBalance(@Valid @PathVariable Long id, @Valid @RequestBody BigDecimal balance) {
         userService.setBalanceToUser(id, balance);
 
@@ -32,7 +32,7 @@ public class BalanceController {
     }
 
     @PostMapping("/add-balance/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> addBalance(@Valid @PathVariable Long id, @Valid @RequestBody BigDecimal balance) {
         userService.addBalanceToUser(id, balance);
 
@@ -40,7 +40,7 @@ public class BalanceController {
     }
 
     @PostMapping("/take-balance/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> takeBalance(@Valid @PathVariable Long id, @Valid @RequestBody BigDecimal balance) {
         userService.takeBalanceToUser(id, balance);
 
@@ -48,7 +48,7 @@ public class BalanceController {
     }
 
     @PostMapping("/p2p-add-balance/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> p2pAddBalance(@Valid @PathVariable Long id, @Valid @RequestBody P2pAddBalanceDTO p2pAddBalanceDTO) {
         replenishmentOfBalanceService.p2pAddBalance(id, p2pAddBalanceDTO);
 

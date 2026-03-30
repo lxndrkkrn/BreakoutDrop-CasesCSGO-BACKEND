@@ -22,7 +22,7 @@ public class SaleController {
     private final WithdrawSkinService withdrawSkinService;
 
     @PostMapping("/skin")
-    @PreAuthorize("isAuthenticated() and #sellSkinDTO.userId == principal.id")
+    //@PreAuthorize("isAuthenticated() and #sellSkinDTO.userId == principal.id")
     public ResponseEntity<?> sellSkin(@Valid @RequestBody SellSkinDTO sellSkinDTO) {
         salesService.sellSkin(sellSkinDTO);
 
@@ -30,7 +30,7 @@ public class SaleController {
     }
 
     @PostMapping("/skin/all-skins")
-    @PreAuthorize("isAuthenticated() and #sellAllSkinsDTO.userId == principal.id")
+    //@PreAuthorize("isAuthenticated() and #sellAllSkinsDTO.userId == principal.id")
     public ResponseEntity<?> sellAllSkin(@Valid @RequestBody SellAllSkinsDTO sellAllSkinsDTO) {
         salesService.sellAllSkins(sellAllSkinsDTO);
 
@@ -38,7 +38,7 @@ public class SaleController {
     }
 
     @PostMapping("/skin/withdraw")
-    @PreAuthorize("isAuthenticated() and #withdrawSkinDTO.userId == principal.id")
+    //@PreAuthorize("isAuthenticated() and #withdrawSkinDTO.userId == principal.id")
     public ResponseEntity<?> withdrawSkin(@Valid @RequestBody WithdrawSkinDTO withdrawSkinDTO) {
         withdrawSkinService.withdrawSkin(withdrawSkinDTO);
 

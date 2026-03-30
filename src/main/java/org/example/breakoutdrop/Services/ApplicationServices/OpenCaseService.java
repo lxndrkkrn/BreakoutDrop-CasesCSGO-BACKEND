@@ -40,7 +40,7 @@ public class OpenCaseService {
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
-    public Skin userOpeningCase(OpeningCaseDTO openingCaseDTO) {
+    public String userOpeningCase(OpeningCaseDTO openingCaseDTO) {
         log.info("Попытка открытия кейса");
         try {
             User user = userService.findUserById(openingCaseDTO.userId());
@@ -48,7 +48,7 @@ public class OpenCaseService {
 
             BigDecimal oldBalance = user.getBalance();
 
-            if (oldBalance.compareTo(openingCase.getPrice()) < 0) {
+            if (oldBalance.compareTo(openingCase.getPrice()) <= 0) {
                 throw new NegativeBalance("Недостаточно средств");
             }
 
@@ -64,7 +64,7 @@ public class OpenCaseService {
             inventoryService.createInventory(createInventoryDTO);
             //transactionService.createTransactionLog(openingCaseDTO.userId(), openingCaseDTO.caseId(), wonSkin.getId(), oldBalance, );
             log.info("Кейс успешно открыт. Выпавший предмет: {}", wonSkin);
-            return wonSkin;
+            return wonSkin.getName();
         } catch (Exception e) {
             log.error("Ошибка при открытии кейса");
             throw e;
@@ -72,41 +72,52 @@ public class OpenCaseService {
     }
 
     private Skin skinCalculation(Case openingCase) {
-        log.info("Попытка выбора скина из кейса");
-        try {
-            SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
-            BigDecimal prizePool = wallet.getPrizePool();
+        SystemWallet wallet = systemWalletRepository.findWithLock()
+                .orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
 
-            List<Skin> fullSkinList = openingCase.getSkinList();
-            List<Skin> skinList = fullSkinList.stream().filter(skin -> skin.getPrice().compareTo(prizePool) <= 0).toList();
+        BigDecimal prizePool = wallet.getPrizePool();
+        List<Skin> fullSkinList = openingCase.getSkinList();
 
-            if (skinList.isEmpty()) {
-                throw new CaseIsEmpty("Кейс '" + openingCase.getName() + "' пуст! Добавьте скины.");
-            }
+        // 1. Фильтруем скины, которые мы МОЖЕМ себе позволить отдать
+        List<Skin> affordableSkins = fullSkinList.stream()
+                .filter(skin -> skin.getPrice().compareTo(prizePool) <= 0)
+                .toList();
 
-            BigDecimal totalChance = new BigDecimal(skinList.stream().mapToDouble(skinService::getChanceSkinBySkin).sum());
-            BigDecimal randomValue = totalChance.multiply(BigDecimal.valueOf(secureRandom.nextDouble()));
-
-            BigDecimal currentSum = new BigDecimal(BigInteger.ZERO);
-
-            for (Skin skin : skinList) {
-                currentSum = currentSum.add(new BigDecimal(skinService.getChanceSkinBySkin(skin)));
-
-                if (randomValue.compareTo(currentSum) <= 0) {
-
-                    wallet.setPrizePool(wallet.getPrizePool().subtract(skin.getPrice()));
-                    return skin; // "Успешный" скин - передаётся наверх
-
-                }
-            }
-            log.info("Скин выбран и передан");
-            return skinList.getLast(); // "Сломанный" скин - передаётся наверх
-
-        } catch (Exception e) {
-            log.error("Ошибка при выборе скина из кейса");
-            throw e;
+        // 2. Если сейф пуст для ЭТОГО кейса — СТОП. Не даем уйти в минус.
+        if (affordableSkins.isEmpty()) {
+            log.warn("Сейф пуст (баланс: {}). Нет доступных скинов в кейсе {}", prizePool, openingCase.getName());
+            throw new ServiceUnavailable503("Извините, в призовом фонде недостаточно средств");
         }
+
+        // 3. Считаем шансы только для доступных скинов
+        double totalChance = affordableSkins.stream().mapToDouble(skinService::getChanceSkinBySkin).sum();
+        double randomValue = totalChance * secureRandom.nextDouble();
+
+        double currentSum = 0;
+        Skin selectedSkin = null;
+
+        for (Skin skin : affordableSkins) {
+            currentSum += skinService.getChanceSkinBySkin(skin);
+            if (randomValue <= currentSum) {
+                selectedSkin = skin;
+                break;
+            }
+        }
+
+        // 4. Страховка: если из-за точности double никто не выбрался, берем последний доступный
+        if (selectedSkin == null) {
+            selectedSkin = affordableSkins.get(affordableSkins.size() - 1);
+        }
+
+        // 5. ВАЖНО: Вычитаем цену ТОЛЬКО здесь, один раз для любого исхода
+        //wallet.setPrizePool(wallet.getPrizePool().subtract(selectedSkin.getPrice()));
+        BigDecimal newWallet = new BigDecimal(wallet.getPrizePool().subtract(selectedSkin.getPrice()).toString());
+
+        log.info("Скин выбран: {}. Цена: {}. Остаток в сейфе: {}", selectedSkin.getName(), selectedSkin.getPrice(), wallet.getPrizePool());
+
+        return selectedSkin;
     }
+
 
     private void takeBalance(Long id, BigDecimal deltaBalance) {
         userService.takeBalanceToUser(id, deltaBalance);

@@ -27,7 +27,7 @@ public class CategoryController {
     private final CategoryService categoryService;
 
     @PostMapping()
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> createCategory(@Valid @RequestBody CreateCategoryDTO createCategoryDTO) {
         Category category = categoryService.createCategory(createCategoryDTO);
 
@@ -35,7 +35,7 @@ public class CategoryController {
     }
 
     @DeleteMapping()
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> deleteCategory(@Valid @RequestBody Long id) {
         Category category = categoryService.deleteCategory(id);
 
@@ -43,7 +43,7 @@ public class CategoryController {
     }
 
     @PatchMapping("/set-title/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setTitleCategory(@Valid @PathVariable Long id, @RequestBody String title) {
         categoryService.setTitleToCategory(id, title);
 
@@ -51,7 +51,7 @@ public class CategoryController {
     }
 
     @PatchMapping("/set-type/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setTypeCategory(@Valid @PathVariable Long id, @RequestBody CategoryType categoryType) {
         categoryService.setTypeToCategory(id, categoryType);
 

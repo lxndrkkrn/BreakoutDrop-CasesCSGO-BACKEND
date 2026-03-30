@@ -21,104 +21,109 @@ import java.math.BigDecimal;
 import java.math.RoundingMode;
 import java.security.SecureRandom;
 import java.util.*;
-
 @Service
 @Slf4j
 @RequiredArgsConstructor
-
 public class UseOfTheContractService {
 
-    private final CaseService caseService;
     private final UserService userService;
     private final SkinService skinService;
     private final InventoryService inventoryService;
-
     private final TransactionService transactionService;
     private final SystemWalletRepository systemWalletRepository;
 
-    //    private final BigDecimal maxCoefficient = new BigDecimal("2.5");
-    //    private final BigDecimal minCoefficient = new BigDecimal("2.5");
     private final BigDecimal coefficient = new BigDecimal("2.5");
-
     private final BigDecimal minPriceSum = new BigDecimal("30");
     private final BigDecimal maxPriceSum = new BigDecimal("50000");
 
     private final SecureRandom secureRandom = new SecureRandom();
 
     @Transactional
-    public Skin useOfTheContract(OpeningContractDTO openingContractDTO) {
-        log.info("Попытка сделать контракт");
+    public Long useOfTheContract(OpeningContractDTO openingContractDTO) {
+        log.info("Попытка создания контракта для пользователя {}", openingContractDTO.userId());
+
         try {
-            SystemWallet wallet = systemWalletRepository.findWithLock().orElseThrow(() -> new ServiceUnavailable503("Нет доступного сейфа"));
-            BigDecimal prizePool = wallet.getPrizePool();
+            // 1. Блокируем кошелек для безопасного расчета пула
+            SystemWallet wallet = systemWalletRepository.findWithLock()
+                    .orElseThrow(() -> new ServiceUnavailable503("Сервис временно недоступен (нет сейфа)"));
 
-            User user = userService.findUserById(openingContractDTO.userId());
-            List<Skin> skins = skinService.findListSkinById(openingContractDTO.skinId());
+            // 2. Получаем КОНКРЕТНЫЕ предметы из инвентаря
+            List<Inventory> usedInventories = inventoryService.findAllById(openingContractDTO.inventoryIds());
 
-            List<Inventory> usedInventories = inventoryService.findInventoryListBySkin(user, new ArrayList<>(skins));
-
-            if (usedInventories.size() != skins.size()) {
-                throw new IllegalArgumentException("У вас нет некоторых скинов");
+            // 3. Валидация владения и количества
+            if (usedInventories.size() != openingContractDTO.inventoryIds().size()) {
+                throw new IllegalArgumentException("Некоторые предметы не найдены в базе данных");
             }
 
-            if (skins.size() < 4) {
-                throw new IllegalArgumentException("Контракт можно создать минимум из 3-х скинов");
-            } else if (skins.size() > 10) {
-                throw new IllegalArgumentException("Контракт можно создать максимум из 10-х скинов");
+            boolean allOwned = usedInventories.stream()
+                    .allMatch(inv -> inv.getUser().getId().equals(openingContractDTO.userId()));
+
+            if (!allOwned) {
+                throw new IllegalArgumentException("Один или несколько предметов вам не принадлежат");
             }
 
-            BigDecimal priceSum = getPriceSum(skins);
-            if (priceSum.compareTo(minPriceSum) <= 0 || priceSum.compareTo(maxPriceSum) >= 0) {
-                throw new InvalidValue("Цена контракта должна быть более 30р и менее 50000р");
+            int itemsCount = usedInventories.size();
+            if (itemsCount < 3 || itemsCount > 10) {
+                throw new IllegalArgumentException("Контракт доступен только для 3-10 предметов (сейчас: " + itemsCount + ")");
             }
 
+            // 4. Расчет стоимости контракта на основе реальных скинов из инвентаря
+            List<Skin> inputSkins = usedInventories.stream().map(Inventory::getSkin).toList();
+            BigDecimal priceSum = getPriceSum(inputSkins);
+
+            if (priceSum.compareTo(minPriceSum) < 0 || priceSum.compareTo(maxPriceSum) > 0) {
+                throw new InvalidValue("Суммарная цена контракта должна быть от 30 до 50 000 руб.");
+            }
+
+            // 5. Определение границ выигрыша
+            BigDecimal minPrice = priceSum.divide(coefficient, 2, RoundingMode.HALF_UP);
             BigDecimal maxPrice = priceSum.multiply(coefficient);
-            if (wallet.getPrizePool().compareTo(maxPrice) <= 0) {
+
+            // Если в сейфе денег меньше, чем максимальный выигрыш, ограничиваем его сейфом
+            if (wallet.getPrizePool().compareTo(maxPrice) < 0) {
                 maxPrice = wallet.getPrizePool();
             }
 
-            BigDecimal minPrice = priceSum.divide(coefficient, 0, RoundingMode.HALF_UP);
-            if (maxPrice.compareTo(minPrice) <= 0) {
-                throw new ImpossibleContract("Пока что создать такой контракт не получится");
+            if (maxPrice.compareTo(minPrice) < 0) {
+                throw new ImpossibleContract("В системе недостаточно средств для обеспечения этого контракта");
             }
 
-            Skin wonSkin = getRandomSkin(wallet, minPrice, maxPrice);
+            // 6. Выбор выигрышного скина
+            Skin wonSkin = getRandomSkin(minPrice, maxPrice);
 
-            CreateInventoryDTO createInventoryDTO = new CreateInventoryDTO(user.getId(), wonSkin.getId());
+            // 7. Проведение транзакций и обновление инвентаря
+            User user = userService.findUserById(openingContractDTO.userId());
 
-            transactionService.createWinTransaction(user, wonSkin.getPrice(), TransactionType.CONTRACT);
+            // Списываем из сейфа стоимость выигрыша
+            wallet.setPrizePool(wallet.getPrizePool().subtract(wonSkin.getPrice()));
+
+            // Удаляем старые вещи, добавляем новую
             inventoryService.deleteAll(usedInventories);
-            inventoryService.createInventory(createInventoryDTO);
+            inventoryService.createInventory(new CreateInventoryDTO(user.getId(), wonSkin.getId()));
 
-            log.info("Контракт успешно создан, выпавший скин: {}; забранные скины: {}", wonSkin, skins);
-            return wonSkin;
+            // Логируем выигрыш в транзакции
+            transactionService.createWinTransaction(user, wonSkin.getPrice(), TransactionType.CONTRACT);
+
+            log.info("Контракт завершен. Юзер: {}, Выпал: {} ({} руб)", user.getId(), wonSkin.getName(), wonSkin.getPrice());
+            return wonSkin.getId();
+
         } catch (Exception e) {
-            log.error("Ошибка при создании контракта: {}", openingContractDTO);
+            log.error("Ошибка контракта: {}", e.getMessage());
             throw e;
         }
     }
 
-    private BigDecimal getPriceSum(List<Skin> usedSkins) {
-
-        return usedSkins.stream()
+    private BigDecimal getPriceSum(List<Skin> skins) {
+        return skins.stream()
                 .map(Skin::getPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
-
     }
 
-    private Skin getRandomSkin(SystemWallet wallet, BigDecimal minPrice, BigDecimal maxPrice) {
-
+    private Skin getRandomSkin(BigDecimal minPrice, BigDecimal maxPrice) {
         BigDecimal randomMultiplier = BigDecimal.valueOf(secureRandom.nextDouble());
-
-//        if (maxPrice.compareTo(wallet.getPrizePool()) >= 0) {
-//            maxPrice = wallet.getPrizePool();
-//        }
-
         BigDecimal priceDiff = maxPrice.subtract(minPrice);
-        BigDecimal randomPrice = minPrice.add(priceDiff.multiply(randomMultiplier));
+        BigDecimal targetPrice = minPrice.add(priceDiff.multiply(randomMultiplier));
 
-        return skinService.findSkinByClosestPrice(randomPrice);
+        return skinService.findSkinByClosestPrice(targetPrice);
     }
-
-
 }

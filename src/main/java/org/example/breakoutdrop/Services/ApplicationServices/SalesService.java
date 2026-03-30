@@ -2,6 +2,7 @@ package org.example.breakoutdrop.Services.ApplicationServices;
 
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
+import org.example.breakoutdrop.DTOs.Balance.P2pAddBalanceDTO;
 import org.example.breakoutdrop.DTOs.Balance.Sell.SellAllSkinsDTO;
 import org.example.breakoutdrop.DTOs.Balance.Sell.SellSkinDTO;
 import org.example.breakoutdrop.Entities.Inventory;
@@ -24,6 +25,7 @@ public class SalesService {
     private final UserService userService;
     private final SkinService skinService;
     private final InventoryService inventoryService;
+    private final ReplenishmentOfBalanceService replenishmentOfBalanceService;
 
     private final TransactionService transactionService;
 
@@ -66,8 +68,13 @@ public class SalesService {
 
             BigDecimal priceAll = prices.stream().reduce(BigDecimal.ZERO, BigDecimal::add);
 
+            P2pAddBalanceDTO addBalance = new P2pAddBalanceDTO(
+                    priceAll.multiply(new BigDecimal("1.2")),
+                    ""
+            );
+
             inventoryService.deleteAll(inventories);
-            userService.addBalanceToUser(user.getId(), priceAll);
+            replenishmentOfBalanceService.p2pAddBalance(user.getId(), addBalance);
 
             log.info("Успешная продажа скинов: Скины: {}; Пользователь: {}", skins, user);
         } catch (Exception e) {

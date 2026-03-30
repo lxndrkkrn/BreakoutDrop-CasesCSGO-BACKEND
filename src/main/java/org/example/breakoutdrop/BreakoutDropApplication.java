@@ -9,5 +9,4 @@ public class BreakoutDropApplication {
     public static void main(String[] args) {
         SpringApplication.run(BreakoutDropApplication.class, args);
     }
-
 }

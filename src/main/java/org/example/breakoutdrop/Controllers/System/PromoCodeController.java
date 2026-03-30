@@ -21,7 +21,7 @@ public class PromoCodeController {
     private final PromoCodeService promoCodeService;
 
     @PostMapping()
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> createPromo(@Valid @RequestBody CreatePromoDTO createPromoDTO) {
         PromoCode promoCode = promoCodeService.createPromo(createPromoDTO);
 
@@ -29,7 +29,7 @@ public class PromoCodeController {
     }
 
     @DeleteMapping()
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> deletePromo(@Valid @RequestBody Long id) {
         promoCodeService.deletePromo(id);
 

@@ -144,4 +144,8 @@ public class CaseService {
         return caseRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
     }
 
+    public List<Skin> findAllSkinsInCase(Long id) {
+        return caseRepository.findAllById(id);
+    }
+
 }

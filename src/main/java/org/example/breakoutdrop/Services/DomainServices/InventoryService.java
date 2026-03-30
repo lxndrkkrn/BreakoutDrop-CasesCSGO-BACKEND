@@ -92,4 +92,8 @@ public class InventoryService {
     public void deleteAll(List<Inventory> inventoryList) {
         inventoryRepository.deleteAll(inventoryList);
     }
+
+    public List<Inventory> findAllById(List<Long> id) {
+        return inventoryRepository.findAllById(id);
+    }
 }

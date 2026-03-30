@@ -26,24 +26,22 @@ public class ReplenishmentOfBalanceService {
 
     @Transactional
     public void p2pAddBalance(Long id, P2pAddBalanceDTO p2pAddBalanceDTO) {
-        log.info("Попытка пополнения баланса для пользователя {}", id);
-        try {
-            BigDecimal deltaBalance = p2pAddBalanceDTO.deltaBalance();
-            BigDecimal factor = BigDecimal.ONE;
+        BigDecimal deltaBalance = p2pAddBalanceDTO.deltaBalance();
+        BigDecimal factor = BigDecimal.ONE;
 
-            if (p2pAddBalanceDTO.promoCode() != null && !p2pAddBalanceDTO.promoCode().isBlank()) {
+        if (p2pAddBalanceDTO.promoCode() != null && !p2pAddBalanceDTO.promoCode().isBlank()) {
+            try {
                 PromoCode promo = promoCodeService.findFirstByName(p2pAddBalanceDTO.promoCode());
-                factor = promo.getFactor();
+                if (promo != null) {
+                    factor = promo.getFactor();
+                }
+            } catch (Exception e) {
+                log.warn("Промокод '{}' не найден или неактивен, игнорируем", p2pAddBalanceDTO.promoCode());
             }
-
-            transactionService.processDeposit(id, deltaBalance);
-            userService.addBalanceToUser(id, deltaBalance.multiply(factor));
-
-            log.info("Баланс успешно пополнен с множителем {}", factor);
-        } catch (Exception e) {
-            log.error("Ошибка при пополнении баланса: {}", e.getMessage());
-            throw e;
         }
+
+        transactionService.processDeposit(id, deltaBalance);
+        userService.addBalanceToUser(id, deltaBalance.multiply(factor));
     }
 
 

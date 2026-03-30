@@ -1,5 +1,6 @@
 package org.example.breakoutdrop.Entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Positive;
@@ -48,8 +49,9 @@ public class Skin {
     @URL(message = "Некоректный url")
     private String skinPicture;
 
-    @ManyToMany
+    @ManyToMany(fetch = FetchType.EAGER)
     @JoinTable(name = "skin_cases", joinColumns = @JoinColumn(name = "skin_id"), inverseJoinColumns = @JoinColumn(name = "case_id"))
+    @JsonIgnore
     private List<Case> cases = new ArrayList<>();
 
 }

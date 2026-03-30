@@ -23,7 +23,7 @@ public class TransactionService {
 
     private final TransactionRepository transactionRepository;
     private final UserService userService;
-    private SystemWalletRepository systemWalletRepository;
+    private final SystemWalletRepository systemWalletRepository;
 
     @Transactional
     public void processDeposit(Long userId, BigDecimal amount) {

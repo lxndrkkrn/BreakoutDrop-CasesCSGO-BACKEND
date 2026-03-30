@@ -24,16 +24,16 @@ public class CaseController {
     private final CaseService caseService;
     private final OpenCaseService openCaseService;
 
-    @PostMapping()
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PostMapping("/create")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> createCase(@Valid @RequestBody CreateCaseDTO createCaseDTO) {
         Case newCase = caseService.createCase(createCaseDTO);
 
         return ResponseEntity.ok(newCase);
     }
 
-    @DeleteMapping()
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @DeleteMapping("/delete")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> deleteCase(@Valid @RequestBody Long id) {
         Case newCase = caseService.deleteCase(id);
 
@@ -41,7 +41,7 @@ public class CaseController {
     }
 
     @PatchMapping("/set-price/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setPriceCase(@Valid @PathVariable Long id, @RequestBody BigDecimal price) {
         caseService.setPriceToCase(id, price);
 
@@ -49,7 +49,7 @@ public class CaseController {
     }
 
     @PatchMapping("/set-name/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setNameCase(@Valid @PathVariable Long id, @RequestBody String name) {
         caseService.setNameToCase(id, name);
 
@@ -57,7 +57,7 @@ public class CaseController {
     }
 
     @PatchMapping("/set-category/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setCategoryCase(@Valid @PathVariable Long id, @RequestBody CategoryIdsRequest categoryIds) {
         caseService.setCategoryToCase(id, categoryIds.categoryIdsRequest());
 
@@ -65,7 +65,7 @@ public class CaseController {
     }
 
     @PatchMapping("/set-picture/{id}")
-    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setPictureCase(@Valid @PathVariable Long id, @RequestBody String url) {
         caseService.setPictureToCase(id, url);
 
