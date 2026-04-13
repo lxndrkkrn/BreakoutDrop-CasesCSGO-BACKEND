@@ -36,21 +36,16 @@ public class UserService implements UserDetailsService {
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
         log.info("Попытка входа пользователя: {}", username);
 
-        // 1. Ищем нашего пользователя в БД
         org.example.breakoutdrop.Entities.User user = userRepository.findByName(username)
                 .orElseThrow(() -> new UsernameNotFoundException("Пользователь не найден: " + username));
 
-        // 2. Превращаем Set<Role> (сущности) в массив строк для Spring Security
-        // Мы берем имя из сущности Role (например, "ROLE_USER")
         String[] roles = user.getRoles().stream()
-                .map(role -> role.getName()) // Берем "ROLE_USER", "ROLE_ADMIN" и т.д.
+                .map(role -> role.getName())
                 .toArray(String[]::new);
 
-        // 3. Собираем объект UserDetails
         return org.springframework.security.core.userdetails.User.builder()
                 .username(user.getName())
                 .password(user.getPassword())
-                // ИСПОЛЬЗУЕМ .authorities() вместо .roles(), чтобы не было дублей ROLE_ROLE_
                 .authorities(roles)
                 .build();
     }
@@ -66,12 +61,21 @@ public class UserService implements UserDetailsService {
             user.setPassword(passwordEncoder.encode(createUserDTO.password()));
             user.setTradeURL(createUserDTO.tradeURL());
 
-            Set<Role> userRoles = createUserDTO.roles().stream()
-                            .map(roleId -> roleRepository.findById(roleId)
-                                    .orElseThrow(() -> new NotFound404("Роль по id в БД не найдена: " + roleId)))
-                                    .collect(Collectors.toSet());
+            if (createUserDTO.roles() == null || createUserDTO.roles().isEmpty()) {
 
-            user.setRoles(userRoles);
+                Role defaultRole = roleRepository.findById(1L)
+                        .orElseThrow(() -> new NotFound404("Дефолтная роль не найдена"));
+                user.setRoles(Set.of(defaultRole));
+
+            } else {
+
+                Set<Role> userRoles = createUserDTO.roles().stream()
+                        .map(roleId -> roleRepository.findById(roleId)
+                                .orElseThrow(() -> new NotFound404("Роль по id в БД не найдена: " + roleId)))
+                        .collect(Collectors.toSet());
+                user.setRoles(userRoles);
+
+            }
 
             userRepository.save(user);
 
@@ -253,7 +257,11 @@ public class UserService implements UserDetailsService {
     }
 
     public User findUserById(Long id) {
-        return userRepository.findById(id).orElseThrow(() -> new NotFound404("Кейс не найден"));
+        return userRepository.findById(id).orElseThrow(() -> new NotFound404("Пользователь не найден"));
+    }
+
+    public User findUserByEmail(String email) {
+        return userRepository.findByEmail(email).orElseThrow(() -> new NotFound404("Пользователь не найден"));
     }
 
 }

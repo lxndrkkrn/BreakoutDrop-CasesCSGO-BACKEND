@@ -78,18 +78,15 @@ public class OpenCaseService {
         BigDecimal prizePool = wallet.getPrizePool();
         List<Skin> fullSkinList = openingCase.getSkinList();
 
-        // 1. Фильтруем скины, которые мы МОЖЕМ себе позволить отдать
         List<Skin> affordableSkins = fullSkinList.stream()
                 .filter(skin -> skin.getPrice().compareTo(prizePool) <= 0)
                 .toList();
 
-        // 2. Если сейф пуст для ЭТОГО кейса — СТОП. Не даем уйти в минус.
         if (affordableSkins.isEmpty()) {
             log.warn("Сейф пуст (баланс: {}). Нет доступных скинов в кейсе {}", prizePool, openingCase.getName());
             throw new ServiceUnavailable503("Извините, в призовом фонде недостаточно средств");
         }
 
-        // 3. Считаем шансы только для доступных скинов
         double totalChance = affordableSkins.stream().mapToDouble(skinService::getChanceSkinBySkin).sum();
         double randomValue = totalChance * secureRandom.nextDouble();
 
@@ -104,13 +101,10 @@ public class OpenCaseService {
             }
         }
 
-        // 4. Страховка: если из-за точности double никто не выбрался, берем последний доступный
         if (selectedSkin == null) {
             selectedSkin = affordableSkins.get(affordableSkins.size() - 1);
         }
 
-        // 5. ВАЖНО: Вычитаем цену ТОЛЬКО здесь, один раз для любого исхода
-        //wallet.setPrizePool(wallet.getPrizePool().subtract(selectedSkin.getPrice()));
         BigDecimal newWallet = new BigDecimal(wallet.getPrizePool().subtract(selectedSkin.getPrice()).toString());
 
         log.info("Скин выбран: {}. Цена: {}. Остаток в сейфе: {}", selectedSkin.getName(), selectedSkin.getPrice(), wallet.getPrizePool());

@@ -1,15 +1,18 @@
 package org.example.breakoutdrop.Configurations;
 
+import org.example.breakoutdrop.Services.JWT.JwtFilter;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
+import org.springframework.security.config.Customizer;
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.config.annotation.web.configurers.AbstractHttpConfigurer;
-import org.springframework.security.config.annotation.web.configurers.LogoutConfigurer;
+import org.springframework.security.config.http.SessionCreationPolicy;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
+import org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter;
 
 @Configuration
 @EnableWebSecurity
@@ -18,36 +21,18 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfiguration {
 
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-        http.csrf(AbstractHttpConfigurer::disable)
-
-//                .authorizeHttpRequests(auth -> auth
-//                        // 1. Публичные страницы (регистрация, статика, главная)
-//                        .requestMatchers("/", "/case/**", "/upgrade/**", "/contract/**").permitAll()
-//
-//                        .requestMatchers("/register").anonymous()
-//
-//                        // 2. Страницы только для админов
-//                        .requestMatchers("/admin/**").hasAnyRole("ADMIN", "SERVICE")
-//
-//                        // 3. Страницы для пользователей с ролью USER или ADMIN
-//                        .requestMatchers("/profile/**").hasAnyRole("USER", "YT", "MODER", "ADMIN", "SERVICE")
-//
-//                        // 4. Все остальное — только после логина
-//                        .anyRequest().authenticated()
-//                )
-//                .formLogin(login -> login
-//                        .loginPage("/login")             // Твой эндпоинт для страницы логина
-//                        .defaultSuccessUrl("/")          // Куда редиректить после успешного входа
-//                        .permitAll()                     // Разрешить всем доступ к форме логина
-//                )
-//                .logout(logout -> logout
-//                        .logoutSuccessUrl("/")           // Куда отправить после выхода
-//                        .permitAll()
-//                )
-                ;
-
-        return http.build();
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtFilter jwtFilter) throws Exception {
+        return http
+                .cors(Customizer.withDefaults())
+                .csrf(AbstractHttpConfigurer::disable)
+                .sessionManagement(ss -> ss.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authorizeHttpRequests(auth -> auth
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/logout", "/", "/css/**", "/js/**", "/jsx/**").permitAll()
+                        .anyRequest().authenticated()
+                )
+                .logout(logout -> logout.permitAll())
+                .addFilterBefore(jwtFilter, UsernamePasswordAuthenticationFilter.class)
+                .build();
     }
 
 
