@@ -25,13 +25,13 @@ public class AuthController {
 
     @PostMapping("/register")
     @PreAuthorize("isAnonymous()")
-    public ResponseEntity<?> register(@RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
+    public ResponseEntity<?> register(@Valid @RequestBody RegisterDTO registerDTO, HttpServletResponse response) {
         return authService.register(registerDTO, response);
     }
 
     @PostMapping("/login")
     @PreAuthorize("isAnonymous()")
-    public ResponseEntity<?> login(@RequestBody LoginDTO loginDTO, HttpServletResponse response) {
+    public ResponseEntity<?> login(@Valid @RequestBody LoginDTO loginDTO, HttpServletResponse response) {
         return authService.login(loginDTO, response);
     }
 

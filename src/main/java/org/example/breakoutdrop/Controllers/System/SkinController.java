@@ -23,7 +23,7 @@ public class SkinController {
     private final SkinService skinService;
 
     @GetMapping("/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> findSkin(@Valid @RequestBody Long id) {
         Skin skin = skinService.findSkinById(id);
 
@@ -31,7 +31,7 @@ public class SkinController {
     }
 
     @PostMapping("/create")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> createSkin(@Valid @RequestBody CreateSkinDTO createSkinDTO) {
         Skin skin = skinService.createSkin(createSkinDTO);
 
@@ -39,7 +39,7 @@ public class SkinController {
     }
 
     @DeleteMapping("/delete")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> deleteSkin(@Valid @RequestBody Long id) {
         skinService.deleteSkin(id);
 
@@ -47,7 +47,7 @@ public class SkinController {
     }
 
     @PatchMapping("/add-to-cases/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> addSkinInCases(@Valid @PathVariable Long id, @RequestBody List<Long> caseIds) {
         skinService.addSkinInCases(id, caseIds);
 
@@ -55,7 +55,7 @@ public class SkinController {
     }
 
     @PatchMapping("/remove-from-cases/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> removeSkinInCases(@Valid @PathVariable Long id, @RequestBody List<Long> caseIds) {
         skinService.removeSkinInCase(id, caseIds);
 
@@ -63,7 +63,7 @@ public class SkinController {
     }
 
     @PatchMapping("/set-chance/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setChance(@Valid @PathVariable Long id, @RequestBody Double chance) {
         skinService.setChance(id, chance);
 
@@ -71,7 +71,7 @@ public class SkinController {
     }
 
     @PatchMapping("/set-price/{id}")
-    //@PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
+    @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> setPrice(@Valid @PathVariable Long id, @RequestBody BigDecimal price) {
         skinService.setPrice(id, price);
 

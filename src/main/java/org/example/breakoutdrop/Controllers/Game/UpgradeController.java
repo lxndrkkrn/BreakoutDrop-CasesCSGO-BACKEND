@@ -19,7 +19,7 @@ public class UpgradeController {
     private final UpgradeService upgradeService;
 
     @PostMapping()
-    //@PreAuthorize("isAuthenticated() and #openingUpgradeDTO.userId == principal.id")
+    @PreAuthorize("isAuthenticated() and #openingUpgradeDTO.userId == principal.id")
     public ResponseEntity<?> upgradeSkin(@Valid @RequestBody OpeningUpgradeDTO openingUpgradeDTO) {
         Long wonSkin = upgradeService.upgradeSkin(openingUpgradeDTO);
 
