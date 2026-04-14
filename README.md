@@ -1,7 +1,9 @@
 # ATTENTION DISCLAIMER: This project is intended for educational purposes only. It does not involve real money or items. The developer does not encourage gambling. This project is not created for commercial purposes; it demonstrates the deception of many online casinos and similar resources, and how their fraudulent and deceptive scripts work. DO NOT PLAY AT THE CASINO!
 
 # Breakout-Drop : Cases CS2
-Проект BreakoutDrop v2.0
+Проект BreakoutDrop v3.0
+
+Поддерживает фронтенд: https://github.com/lxndrkkrn/BreakoutDrop-CasesCSGO-FRONTEND
 
 ### Стек:
 - Java 21, Spring Boot 4
@@ -10,6 +12,8 @@
 - Docker
 - Spring Security, JWT, Cookies
 - Swagger
+- HTTP
+- Frontend: localhost:3000/
 
 ### Функционал:
 - Создание / Удаление пользователей
@@ -24,13 +28,14 @@
 - Авторизация на сайте (+ Куки)
 
 ### Нововведения:
-- Добавлен контроллер авторизации
-- Добавлен сервис авторизации
-- Добавлена ветка сервисов JWT: JwtUtils и JwtFilter
-- Обновлена цепочка фильтров безопасности (SecurityFilterChain класс)
+- Поддержка фронтенда из отдельного пакета (Указывать путь к фронтенду в ../docker-compose -> frontend: build: context:/...)
+- Добавлена поддержка сохранения файлов cookies в браузер
+- Регистрация / Логин / Логаут через формы на фронтенде
 
 ### Микроизменения:
-- Микрофиксы багов
+- Починка spring security chain
+- Исправлены DTO для регистрации и логина
+- Очень мелкие изменения
 
 ### В разработке:
 - ???

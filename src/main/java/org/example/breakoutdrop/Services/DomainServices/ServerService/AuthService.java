@@ -52,8 +52,10 @@ public class AuthService {
 
         ResponseCookie cookie = ResponseCookie.from("jwt_token", token)
                 .httpOnly(true)
+                .secure(false)   // Для разработки на localhost ставим false
                 .path("/")
-                .maxAge(604800) // 7 дней
+                .maxAge(604800)
+                .sameSite("Lax") // Важно для локальной работы
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -68,8 +70,10 @@ public class AuthService {
 
         ResponseCookie cookie = ResponseCookie.from("jwt_token", token)
                 .httpOnly(true)
+                .secure(false)   // Для разработки на localhost ставим false
                 .path("/")
-                .maxAge(604800) // 7 дней
+                .maxAge(604800)
+                .sameSite("Lax") // Важно для локальной работы
                 .build();
 
         response.addHeader(HttpHeaders.SET_COOKIE, cookie.toString());
@@ -80,7 +84,7 @@ public class AuthService {
 
         ResponseCookie cookie = ResponseCookie.from("jwt_token", "")
                 .httpOnly(true)
-                .secure(true)
+                .secure(false)
                 .path("/")
                 .maxAge(0)
                 .sameSite("Lax")

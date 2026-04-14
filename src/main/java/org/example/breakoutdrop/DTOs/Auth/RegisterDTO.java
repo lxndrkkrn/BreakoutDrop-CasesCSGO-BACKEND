@@ -8,7 +8,7 @@ import org.hibernate.validator.constraints.URL;
 
 public record RegisterDTO(
         @JsonProperty("name") @NotNull String name,
-        @JsonProperty("password") @NotNull @Size(min = 6) String password,
-        @JsonProperty("email") @NotNull @Email String email,
-        @JsonProperty("tradeURL") @NotNull @URL String tradeURL
+        @JsonProperty("password") @NotNull String password,
+        @JsonProperty("email") @NotNull String email,
+        @JsonProperty("tradeURL") @NotNull String tradeURL
 ) {}
