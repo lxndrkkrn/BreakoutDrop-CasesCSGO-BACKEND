@@ -4,6 +4,8 @@ import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.example.breakoutdrop.DTOs.Controller.CategoryIdsRequest;
 import org.example.breakoutdrop.DTOs.Create.CreateCaseDTO;
+import org.example.breakoutdrop.DTOs.Response.GetCaseFrontResponseDTO;
+import org.example.breakoutdrop.DTOs.Response.GetCaseResponseDTO;
 import org.example.breakoutdrop.Entities.Case;
 import org.example.breakoutdrop.Services.ApplicationServices.OpenCaseService;
 import org.example.breakoutdrop.Services.DomainServices.CaseService;
@@ -23,6 +25,20 @@ public class CaseController {
 
     private final CaseService caseService;
     private final OpenCaseService openCaseService;
+
+    @GetMapping("/find/{id}")
+    public ResponseEntity<?> findCaseByIdForFrontend(@Valid @PathVariable Long id) {
+        GetCaseResponseDTO newCase = caseService.findCaseByIdForFrontend(id);
+
+        return ResponseEntity.ok(newCase);
+    }
+
+    @GetMapping("/find/all")
+    public ResponseEntity<?> findAllCaseForFrontend() {
+        List<GetCaseFrontResponseDTO> newCaseList = caseService.findAllCaseForFrontend();
+
+        return ResponseEntity.ok(newCaseList);
+    }
 
     @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")

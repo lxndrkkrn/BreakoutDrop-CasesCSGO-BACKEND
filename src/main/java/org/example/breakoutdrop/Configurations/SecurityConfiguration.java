@@ -48,7 +48,10 @@ public class SecurityConfiguration {
                 .csrf(AbstractHttpConfigurer::disable)
                 .sessionManagement(ss -> ss.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
                 .authorizeHttpRequests(auth -> auth
-                        .requestMatchers("/auth/login", "/auth/register", "/auth/logout", "/", "/css/**", "/js/**", "/jsx/**").permitAll()
+                        .requestMatchers("/auth/login", "/auth/register", "/auth/logout",
+                                "/", "/css/**", "/js/**", "/jsx/**",
+                                "/breakout-drop/case/find/**")
+                        .permitAll()
                         .anyRequest().authenticated()
                 )
                 .logout(logout -> logout.permitAll())

@@ -11,6 +11,8 @@ import org.example.breakoutdrop.Repositories.CategoryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.util.List;
+
 @Service
 @Slf4j
 @RequiredArgsConstructor
@@ -87,6 +89,10 @@ public class CategoryService {
             log.error("Ошибка при установке Типа для категории кейсов");
             throw e;
         }
+    }
+
+    public List<Category> findAll() {
+        return categoryRepository.findAll();
     }
 
 }

@@ -32,8 +32,8 @@ public class Category {
     @Column(nullable = false)
     private LocalDateTime localDateTime = LocalDateTime.now();
 
-    @ManyToOne()
-    @JoinColumn(name = "category_id")
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "case_id")
     private Case caseEntity;
 
 }

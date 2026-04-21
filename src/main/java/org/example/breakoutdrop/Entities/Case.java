@@ -35,7 +35,7 @@ public class Case {
     @URL(message = "Должна быть ссылка")
     private String pictureCase;
 
-    @ManyToMany(mappedBy = "cases", fetch = FetchType.EAGER)
+    @ManyToMany(mappedBy = "cases", fetch = FetchType.LAZY)
     private List<Skin> skinList = new ArrayList<>();
 
     @OneToMany(mappedBy = "caseEntity", cascade = CascadeType.ALL, orphanRemoval = true)

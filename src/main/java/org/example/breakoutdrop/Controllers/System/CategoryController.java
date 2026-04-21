@@ -15,6 +15,7 @@ import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.math.BigDecimal;
+import java.util.List;
 
 @RestController
 @CrossOrigin("*")
@@ -26,7 +27,14 @@ public class CategoryController {
     private final CaseService caseService;
     private final CategoryService categoryService;
 
-    @PostMapping()
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAllCase() {
+        List<Category> newCaseList = categoryService.findAll();
+
+        return ResponseEntity.ok(newCaseList);
+    }
+
+    @PostMapping("/create")
     @PreAuthorize("hasAnyRole('ADMIN', 'SERVICE')")
     public ResponseEntity<?> createCategory(@Valid @RequestBody CreateCategoryDTO createCategoryDTO) {
         Category category = categoryService.createCategory(createCategoryDTO);
